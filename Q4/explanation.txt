@@ -1,0 +1,3 @@
+Rows are Origin country & Destination country; columns are year.
+Population of different age and gender are given different color and are shown in horizontal stacked bars.
+Since the total population can vary greatly, small values will be hard to tell if use linear scale. Hence, log scale is used.

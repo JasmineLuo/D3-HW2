@@ -1,0 +1,4 @@
+Use color.domain.map() to assign color to year;
+Introduce "start" and "end" parameter for data, in order to get exact location of year(color);
+Introduce "total" parameter to save the total length for each bar, in order to scale y axis properly;
+Use “rect” and “text” to build color legend.

@@ -1,0 +1,4 @@
+Color legend -> States, Size -> Undergrad population.
+First graph: SAT average (y) and PCTPELL(x) -> “requirement reference for users”.
+Second graph: average Salary(y) and percentage of > 25k(x) -> “what users care about”.
+With 1405 nodes, graph is quite big and tooltip tells OPEID & Name of the university.

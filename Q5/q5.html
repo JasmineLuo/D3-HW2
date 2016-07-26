@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+
+<style>
+body {
+  font: 11px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.dot {
+  stroke: #000;
+}
+
+text {
+  font: 10px sans-serif;
+  pointer-events: none;
+  text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+}
+
+.tooltip {
+  position: absolute;
+  width: 200px;
+  height: 56px;
+  pointer-events: none;
+  background: gray;
+  opacity: 9;
+}
+</style>
+<body>
+<script src="../lib/d3/d3.v3.min.js"></script>
+
+<script>
+var margin = {top: 20, right: 20, bottom: 30, left: 60},
+    width = 2700 - margin.left - margin.right,
+    height = 1500 - margin.top - margin.bottom;
+
+
+var xValue = function(d) { return d.PCTPELL;}, 
+    xScale = d3.scale.linear().range([0, width-30]), 
+    xMap = function(d) { return xScale(xValue(d));},
+    xAxis = d3.svg.axis().scale(xScale).orient("bottom");
+
+
+var yValue = function(d) { 
+        console.log(d.SAT);
+        return d.SAT;}, 
+    yScale = d3.scale.linear().range([height, 0]).nice(), 
+    yMap = function(d) { return yScale(yValue(d));}, 
+    yAxis = d3.svg.axis().scale(yScale).orient("left");
+
+
+var cValue = function(d) { return d.State;},
+    //color = d3.scale.category20b();
+    color = d3.scale.ordinal().range(["#0000FF", "#4169E1","#6495ED","#1E90FF","#00BFFF","#87CEFA","#B0E0E6","#B0C4DE","#4682B4","#5F9EA0","#00CED1",
+      "#AFEEEE","#7FFFD4","#7B68EE","#6A5ACD","#800080","#8B008B","#9400D3","#9370DB","#DA70D6","#FF00FF","#DDA0DD","#D8BFD8","#E6E6FA","#F0E68C","#FFDAB9", "#FFA500","#FF6347","#FAA460","#8B0000","#B22222","#A0522D","#CD853F","#DAA520","#D2B48C","#FA8072","#F08080","#DB7093","#FF69B4",
+      "#FFB6C1","#6B8E23","#006400","#228B22","#3CB371","#90EE90","#2F4F4F","#696969","#2F4F4F","#A9A9A9","#D3D3D3","#ADFF2F","#98FB98","#EEE8AA","#FFFF00"]);
+
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", 2*(height + margin.top + margin.bottom))
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+var tooltip = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 9);
+
+
+
+
+var xValue1 = function(d) { return d.SalaryRate;}, 
+    xScale1 = d3.scale.linear().range([0, width-30]), 
+    xMap1 = function(d) { return xScale1(xValue1(d));}, 
+    xAxis1 = d3.svg.axis().scale(xScale1).orient("bottom");
+
+
+var yValue1 = function(d) { 
+        //console.log(d.SAT);
+        return d.Salary;}, 
+    yScale1 = d3.scale.linear().range([(2*height+margin.top+margin.bottom), height+margin.top+margin.bottom]), 
+    yMap1 = function(d) { return yScale1(yValue1(d));}, 
+    yAxis1 = d3.svg.axis().scale(yScale1).orient("left");
+
+/*var svg2 = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate(" + margin.left + "," + (2*margin.top + height+margin.bottom)+ ")");*/
+
+
+
+
+
+
+d3.csv("Q5bdata.csv", function(error, data) {
+
+
+  data.forEach(function(d) {  
+    d.PCTPELL = +d.PCTPELL;
+    d.SAT = +d.SAT;
+    d.SalaryRate = +d.SalaryRate;
+    d.Salary = +d.Salary;
+
+  });
+
+
+  xScale.domain([d3.min(data, xValue)-0.1, d3.max(data, xValue)+0.01]);
+  yScale.domain([0, d3.max(data, yValue)]);
+
+
+
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("x", width)
+      .attr("y", -6)
+      .style("text-anchor", "end")
+      .text("PCTPELL");
+
+
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("SAT");
+
+
+var node = svg.selectAll(".dot")
+      .data(data)
+      .enter()
+      .append("g")
+      .attr("class",".dot")
+      .append("circle")
+      .attr("r", function(d){ return Math.max(2, Math.sqrt(d.UGDs)/15); })
+      .attr("cx", xMap)
+      .attr("cy", yMap)
+      .style("stroke","black")
+      .style("fill", function(d) { return color(cValue(d));})
+      .on("mouseover", function(d) {
+          tooltip.transition()
+               .duration(200)
+               .style("opacity", .9);
+          tooltip.html("OPEID"+ d.OPEID + "<br/> " + d.INSTName +"<br/>")
+               .style("left", (d3.event.pageX + 5) + "px")
+               .style("top", (d3.event.pageY - 28) + "px");
+      })
+      .on("mouseout", function(d) {
+          tooltip.transition()
+               .duration(500)
+               .style("opacity", 0);
+      });
+
+
+
+  var legend = svg.selectAll(".legend")
+      .data(color.domain())
+    .enter().append("g")
+      .attr("class", "legend")
+      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+
+  legend.append("rect")
+      .attr("x", width - 48)
+      .attr("width", 48)
+      .attr("height", 48)
+      .style("fill", color);
+
+
+  legend.append("text")
+      .attr("x", width - 56)
+      .attr("y", 9)
+      .attr("dy", ".35em")
+      .style("text-anchor", "end")
+      .text(function(d) { return d;})
+
+
+  // add following graph
+  xScale1.domain([d3.min(data, xValue1)-0.1, d3.max(data, xValue1)+0.01]);
+  yScale1.domain([0, d3.max(data, yValue1)]);
+  //console.log(d3.max(data, yValue), d3.min(data, yValue));
+  //d3.min(data, xValue1)-0.1
+
+
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + (2*height+margin.bottom+margin.top) + ")")
+      .call(xAxis1)
+    .append("text")
+      .attr("class", "label")
+      .attr("x", width)
+      .attr("y", -6)
+      .style("text-anchor", "end")
+      .text("Complete Rate");
+
+
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis1)
+    .append("text")
+      .attr("class", "label")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Salary");
+
+
+var node2 = svg.selectAll(".dot")
+      .data(data)
+      .enter()
+      .append("g")
+      .attr("class",".dot")
+      .append("circle")
+      .attr("r", function(d){ return Math.max(2, Math.sqrt(d.UGDs)/15); })
+      .attr("cx", xMap1)
+      .attr("cy", yMap1)
+      .style("stroke","black")
+      .style("fill", function(d) { return color(cValue(d));})
+      .on("mouseover", function(d) {
+          tooltip.transition()
+               .duration(200)
+               .style("opacity", .9);
+          tooltip.html("OPEID"+ d.OPEID + "<br/> " + d.INSTName +"<br/>")
+               .style("left", (d3.event.pageX + 5) + "px")
+               .style("top", (d3.event.pageY - 28) + "px");
+      })
+      .on("mouseout", function(d) {
+          tooltip.transition()
+               .duration(500)
+               .style("opacity", 0);
+      });
+
+
+var legend2 = svg.selectAll(".legend")
+      .data(color.domain())
+    .enter().append("g")
+      .attr("class", "legend")
+      .attr("transform", function(d, i) { return "translate( 0," +(height+ i * 20) + ")"; });
+
+
+  legend2.append("rect")
+      .attr("x", width - 18)
+      .attr("width", 18)
+      .attr("height", 18)
+      .style("fill", color);
+
+
+  legend2.append("text")
+      .attr("x", width - 24)
+      .attr("y", 9)
+      .attr("dy", ".35em")
+      .style("text-anchor", "end")
+      .text(function(d) { return d;})
+});
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+body {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: auto;
+}
+
+</style>
+<body>
+<script src="../lib/d3/d3.v3.min.js"></script>
+<script>
+
+var padding = {top: 20, right: 20, bottom: 30, left: 40},
+    width = 1000 - padding.left - padding.right,
+    height = 500 - padding.top - padding.bottom;
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width + padding.left + padding.right)
+    .attr("height", height + padding.top + padding.bottom)
+    .append("g")
+    .attr("transform", "translate(" + padding.left + "," + padding.top + ")");
+
+var color = d3.scale.category20();
+    
+d3.csv("nepal_new.csv", function(error, data) {
+
+/*var x = d3.scale.ordinal()
+    .rangeRoundBands([0, width], .1);
+
+var xlabel = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");*/
+
+  data=data.slice(0,9);
+  color.domain(d3.keys(data[0]).slice(0,5));
+
+  data.forEach(function(d) {
+    var start = 0;
+    d.years = color.domain().map(function(year) { 
+      return {year: year, start: start, end: start += +d[year]}; });
+    d.total = d.years[d.years.length - 1].end;
+  });
+
+  var x = d3.scale.ordinal()
+    .rangeRoundBands([0, width], .1)
+    .domain(data.map(function(d) { return d.District; }));
+
+  var xlabel = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+  var y = d3.scale.linear()
+    .rangeRound([height, 0])
+    .domain([0, d3.max(data, function(d) { return d.total; })]);
+
+  var ylabel = d3.svg.axis()
+    .scale(y)
+    .orient("left")
+    .tickFormat(d3.format(".2s"));
+
+  var District = svg.selectAll(".District")
+      .data(data)
+      .enter()
+      .append("g")
+      .attr("class", "g")
+      .attr("transform", function(d) { return "translate(" + x(d.District) + ",0)"; });
+
+  District.selectAll("rect")
+      .data(function(d) { return d.years; })
+      .enter()
+      .append("rect")
+      .attr("width", x.rangeBand())
+      .attr("y", function(d) { return y(d.end); })
+      .attr("height", function(d) { return y(d.start) - y(d.end); })
+      .style("fill", function(d) { return color(d.year); });
+
+
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xlabel);
+
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(ylabel);
+
+  svg.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".50em");
+
+  var Label = svg.selectAll(".legend")
+      .data(color.domain())
+      .enter()
+      .append("g")
+      .attr("class", "legend")
+      .attr("transform", function(d, i) { return "translate(0," + i * 30 + ")"; });
+
+  Label.append("rect")
+      .attr("x", width - 50)
+      .attr("width", 20)
+      .attr("height", 20)
+      .style("fill", color);
+
+  Label.append("text")
+      .attr("x", width - 24)
+      .attr("y", 9)
+      .attr("dy", ".35em")
+      .style("text-anchor", "start")
+      .text(function(d) { return d; });
+});
+
+
+</script>
